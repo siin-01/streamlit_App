@@ -6,7 +6,7 @@ import random
 # 설정
 # --------------------------
 
-API_KEY = "여기에_OpenWeather_API키"
+API_KEY = "e9cb9eeb7e6345707e71485fb442e09c"
 
 st.set_page_config(
     page_title="🍙 오늘 뭐 먹지?",
