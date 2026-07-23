@@ -43,7 +43,6 @@ def add_log(msg):
 # 2. 게임 계산용 유틸리티 함수
 # -----------------------------------------------------------------------------
 def get_action_time(base_time):
-    # 민첩이 높을수록 행동/이동 시간 단축 (최대 70% 감소)
     reduction = min(0.7, p["dex"] * 0.02)
     return round(base_time * (1 - reduction), 1)
 
@@ -51,7 +50,7 @@ def check_level_up():
     while p["exp"] >= p["max_exp"]:
         p["exp"] -= p["max_exp"]
         p["level"] += 1
-        p["max_exp"] = int(p["max_exp"] * 1.25)  # 완만하게 증가하여 빠른 레벨업 유도
+        p["max_exp"] = int(p["max_exp"] * 1.25)
         p["stat_points"] += 5
         p["max_hp"] += 20
         p["max_mp"] += 10
@@ -59,7 +58,6 @@ def check_level_up():
         p["mp"] = p["max_mp"]
         add_log(f"🎉 **레벨 업!** 현재 레벨: {p['level']} (스탯 포인트 +5)")
         
-        # 5레벨마다 새 스킬 습득
         if p["level"] % 5 == 0:
             new_skill = f"알고리즘 폭발 (Lv.{p['level']})"
             p["skills"].append(new_skill)
@@ -77,10 +75,11 @@ with st.sidebar:
     st.markdown("---")
     
     st.subheader("📊 능력치 (💡 마우스를 올려 상세정보 확인)")
-    st.write(f"💪 **힘 (STR)**: {p['str']}", help="물리 기본 데미지를 증가시킵니다.")
-    st.write(f"🪄 **최대 MP**: {p['max_mp']}", help="스킬 사용 가능 횟수 및 스킬 데미지를 증가시킵니다.")
-    st.write(f"⚡ **민첩 (DEX)**: {p['dex']}", help="지역 이동, 낚시, 휴식 시간을 단축시키고 몬스터 공격 회피율을 높입니다.")
-    st.write(f"🍀 **운 (LUCK)**: {p['luck']}", help="치명타(크리티컬) 발동 확률과 치명타 데미지를 증가시킵니다.")
+    # st.write 대신 st.markdown을 사용하여 help 옵션 정상 적용
+    st.markdown(f"💪 **힘 (STR)**: {p['str']}", help="물리 기본 데미지를 증가시킵니다.")
+    st.markdown(f"🪄 **최대 MP**: {p['max_mp']}", help="스킬 사용 가능 횟수 및 스킬 데미지를 증가시킵니다.")
+    st.markdown(f"⚡ **민첩 (DEX)**: {p['dex']}", help="지역 이동, 낚시, 휴식 시간을 단축시키고 몬스터 공격 회피율을 높입니다.")
+    st.markdown(f"🍀 **운 (LUCK)**: {p['luck']}", help="치명타(크리티컬) 발동 확률과 치명타 데미지를 증가시킵니다.")
     
     if p["stat_points"] > 0:
         st.success(f"남은 스탯 포인트: {p['stat_points']}")
@@ -191,7 +190,6 @@ elif st.session_state.location == "던전":
     
     dungeon_diff = st.selectbox("던전 난이도 선택", ["초급 던전 (강해진 슬라임)", "중급 던전 (정예 고블린)", "상급 던전 (보스 드래곤)"])
     
-    # 강화된 몬스터 데이터 설정
     if "초급" in dungeon_diff:
         enemy = {"name": "강해진 슬라임", "hp": 120, "max_hp": 120, "atk": 15, "exp": 40, "gold": 25}
     elif "중급" in dungeon_diff:
@@ -218,10 +216,8 @@ elif st.session_state.location == "던전":
             turn += 1
             time.sleep(0.4)
             
-            # --- 1. 플레이어 턴 (조건 검사) ---
             chosen_action = "기본 평타 공격"
             
-            # 조건 1 검사
             if cond_1 == "내 HP < 40%" and (p["hp"] / p["max_hp"]) < 0.4:
                 chosen_action = action_1
             elif cond_1 == "적 HP < 30%" and (enemy["hp"] / enemy["max_hp"]) < 0.3:
@@ -230,7 +226,6 @@ elif st.session_state.location == "던전":
                 chosen_action = action_1
             elif cond_1 == "항상 실행":
                 chosen_action = action_1
-            # 조건 2 검사
             elif cond_2 == "내 HP < 40%" and (p["hp"] / p["max_hp"]) < 0.4:
                 chosen_action = action_2
             elif cond_2 == "내 MP >= 10" and p["mp"] >= 10:
@@ -238,12 +233,10 @@ elif st.session_state.location == "던전":
             else:
                 chosen_action = action_2
 
-            # 크리티컬 데미지 계산
             crit_chance = p["luck"] * 0.02
             is_crit = random.random() < crit_chance
             crit_mult = 1.5 + (p["luck"] * 0.01) if is_crit else 1.0
 
-            # 행동 수행
             if chosen_action == "음식 섭취 (HP 회복)":
                 if p["inventory"]["food"] > 0:
                     p["inventory"]["food"] -= 1
@@ -251,7 +244,6 @@ elif st.session_state.location == "던전":
                     p["hp"] = min(p["max_hp"], p["hp"] + heal)
                     add_log(f"🍱 [턴 {turn}] 가방에서 음식을 꺼내 먹어 HP를 {heal} 회복했습니다. (남은 음식: {p['inventory']['food']}개)")
                 else:
-                    # 음식 없을 시 평타 전환
                     dmg = int((p["str"] + p["weapon_power"]) * crit_mult)
                     enemy["hp"] -= dmg
                     add_log(f"⚔️ [턴 {turn}] 음식이 없어 기본 공격! {enemy['name']}에게 {dmg} 데미지!")
@@ -268,12 +260,11 @@ elif st.session_state.location == "던전":
                 enemy["hp"] -= dmg
                 add_log(f"🪄 [턴 {turn}] 스킬 공격! {enemy['name']}에게 {dmg} 데미지!")
 
-            else: # 기본 평타
+            else:
                 dmg = int((p["str"] + p["weapon_power"]) * crit_mult)
                 enemy["hp"] -= dmg
                 add_log(f"⚔️ [턴 {turn}] 기본 공격! {enemy['name']}에게 {dmg} 데미지!")
 
-            # 몬스터 처치 체크
             if enemy["hp"] <= 0:
                 add_log(f"🏆 {enemy['name']}을(를) 처치했습니다! (+{enemy['exp']} EXP, +{enemy['gold']} Gold)")
                 p["exp"] += enemy["exp"]
@@ -281,7 +272,6 @@ elif st.session_state.location == "던전":
                 check_level_up()
                 break
 
-            # --- 2. 몬스터 턴 ---
             dodge_chance = min(0.5, p["dex"] * 0.02)
             if random.random() < dodge_chance:
                 add_log(f"💨 {enemy['name']}의 강력한 공격을 민첩하게 회피했습니다!")
