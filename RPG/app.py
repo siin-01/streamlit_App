@@ -1,4 +1,3 @@
-
 import streamlit as st
 import random
 import time
@@ -348,12 +347,6 @@ elif st.session_state.location == "집":
 # -----------------------------------------------------------------------------
 # 6. 하단 실시간 게임 로그 출력
 # -----------------------------------------------------------------------------
-st.markdown("---")
-st.subheader("📜 모험 일지 (Game Logs)")
-for log in reversed(st.session_state.logs):
-    st.write(log)
-
-```
 st.markdown("---")
 st.subheader("📜 모험 일지 (Game Logs)")
 for log in reversed(st.session_state.logs):
